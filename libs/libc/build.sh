@@ -1,9 +1,12 @@
-set -e
+#!/usr/bin/env bash
+# Download and extract WASI sysroot (libc + headers)
+set -euo pipefail
 
-WASI_SDK=19
+url="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_MAJOR}/wasi-sysroot-${WASI_SDK_FULL}.tar.gz"
+curl -fsSL --retry 3 --retry-connrefused -o /tmp/wasi-sysroot.tar.gz "$url"
 
-wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-$WASI_SDK/wasi-sysroot-$WASI_SDK.0.tar.gz
-tar -xzf wasi-sysroot-$WASI_SDK.0.tar.gz
+rm -rf wasi-sysroot
+tar -xzf /tmp/wasi-sysroot.tar.gz
 
-cp -r wasi-sysroot/include/* $SYSROOT/include
-cp -r wasi-sysroot/lib/wasm32-wasi/* $SYSROOT/lib/wasm32-wasi
+cp -r wasi-sysroot-${WASI_SDK_FULL}/include/* "$SYSROOT/include"
+cp -r wasi-sysroot-${WASI_SDK_FULL}/lib/wasm32-wasip1/* "$SYSROOT/lib/wasm32-wasi"

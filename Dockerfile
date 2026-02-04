@@ -1,13 +1,20 @@
-FROM alpine:3.17
+# WASI SDK WebAssembly Builder Image
+# Note: Version values are passed via --build-arg from Makefile (sourced from versions.mk)
+ARG ALPINE_VERSION
+FROM alpine:${ALPINE_VERSION}
 
 ARG BUILDER_IMAGE_VERSION
 LABEL version=${BUILDER_IMAGE_VERSION}
+
+ARG WASI_SDK_MAJOR
+ARG WASI_SDK_FULL
 
 RUN apk add --no-cache \
   autoconf \
   automake \
   bash \
   binutils \
+  ca-certificates \
   clang \
   curl \
   git \
@@ -16,9 +23,13 @@ RUN apk add --no-cache \
   llvm \
   make
 
-RUN \
-  wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/libclang_rt.builtins-wasm32-wasi-19.0.tar.gz && \
-  tar -xzf libclang_rt.builtins-wasm32-wasi-19.0.tar.gz && \
-  mkdir -p /usr/lib/clang/$(ls /usr/lib/clang)/lib/wasi/ && \
-  mv lib/wasi/libclang_rt.builtins-wasm32.a /usr/lib/clang/*/lib/wasi/ && \
-  rm libclang_rt.builtins-wasm32-wasi-19.0.tar.gz
+# Install WASI SDK libclang_rt builtins into clang resource directory
+RUN set -euo pipefail; \
+  url="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_MAJOR}/libclang_rt-${WASI_SDK_FULL}.tar.gz"; \
+  curl -fsSL --retry 3 --retry-connrefused -o /tmp/builtins.tar.gz "$url"; \
+  tar -xzf /tmp/builtins.tar.gz -C /tmp; \
+  clang_resource_dir="$(clang -print-resource-dir)"; \
+  mkdir -p "$clang_resource_dir/lib/wasi"; \
+  cp "/tmp/libclang_rt-${WASI_SDK_FULL}/wasm32-unknown-wasi/libclang_rt.builtins.a" \
+     "$clang_resource_dir/lib/wasi/libclang_rt.builtins-wasm32.a"; \
+  rm -rf /tmp/libclang_rt-${WASI_SDK_FULL} /tmp/builtins.tar.gz

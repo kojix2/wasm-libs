@@ -1,10 +1,12 @@
-set -e
+#!/usr/bin/env bash
+# Build Boehm-Demers-Weiser Garbage Collector for WASM
+set -euo pipefail
 
-git clone --branch v8.2.2 --depth 1 https://github.com/ivmai/bdwgc
+git clone --branch "${BDWGC_VERSION}" --depth 1 https://github.com/ivmai/bdwgc
 cd bdwgc
 
 export CC="clang"
-export CFLAGS="-target wasm32-wasi --sysroot=${SYSROOT} -DCPPCHECK -Os"
+export CFLAGS="-target wasm32-wasi --sysroot=${SYSROOT} -Os -mllvm -wasm-enable-sjlj -DCPPCHECK"
 
 ./autogen.sh
 
@@ -16,7 +18,11 @@ export CFLAGS="-target wasm32-wasi --sysroot=${SYSROOT} -DCPPCHECK -Os"
   --prefix=${SYSROOT} \
   --disable-docs
 
-cat <<END >> include/private/gcconfig.h
+# Patch gcconfig.h for WASI compatibility
+# NOTE: This patch is tested with bdwgc v8.2.x series.
+# If upgrading to v8.3+ or v9.x, verify this patch is still needed.
+# Future versions may have native WASI support.
+cat <<'END' >> include/private/gcconfig.h
 #ifndef GCCONFIG_EXT_H
 #define GCCONFIG_EXT_H
 
@@ -46,9 +52,7 @@ inline ptr_t GC_wasm_get_mem(size_t bytes) {
 #endif /* GCCONFIG_EXT_H */
 END
 
-touch $SYSROOT/include/setjmp.h
 make -j$(nproc)
-rm $SYSROOT/include/setjmp.h
 
 llvm-ranlib .libs/libgc.a
 llvm-ranlib .libs/libcord.a

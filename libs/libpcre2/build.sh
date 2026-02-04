@@ -1,6 +1,8 @@
-set -e
+#!/usr/bin/env bash
+# Build PCRE2 (Perl Compatible Regular Expressions v2) for WASM
+set -euo pipefail
 
-git clone --branch pcre2-10.42 --depth 1 https://github.com/PCRE2Project/pcre2
+git clone --branch "${PCRE2_VERSION}" --depth 1 https://github.com/PCRE2Project/pcre2
 cd pcre2
 
 export CC="clang"

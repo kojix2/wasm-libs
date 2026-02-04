@@ -1,13 +1,42 @@
-BUILDER_IMAGE_VERSION=$(shell sha256sum Dockerfile | cut -d ' ' -f1)
-BUILDER_IMAGE_NAME=wasm-libs-builder-image
-WASI_VERSION=14
-BUILD_ENV=docker run --rm -ti --volume=$(PWD):/mnt --user=$(shell id -u):$(shell id -g) --workdir=/tmp -e "SYSROOT=/mnt/wasm32-wasi-sysroot" $(BUILDER_IMAGE_NAME)
+# WebAssembly WASI Libraries Build System
+include versions.mk
 
-all: libc libclang_rt libpcre libpcre2 libgc
+# Builder image versioning (rebuild when Dockerfile or versions change)
+BUILDER_IMAGE_VERSION=$(shell cat Dockerfile versions.mk | sha256sum | cut -d ' ' -f1)
+BUILDER_IMAGE_NAME=wasm-libs-builder-image
+
+# Auto-detect container CLI (docker or podman)
+CONTAINER_CLI ?= $(shell if command -v docker >/dev/null 2>&1; then echo docker; elif command -v podman >/dev/null 2>&1; then echo podman; else echo docker; fi)
+
+# Podman-specific flags for SELinux and user namespace
+MOUNT_FLAGS=--volume=$(PWD):/mnt
+EXTRA_RUN_FLAGS=
+ifeq ($(CONTAINER_CLI),podman)
+MOUNT_FLAGS=--volume=$(PWD):/mnt:Z
+EXTRA_RUN_FLAGS=--userns=keep-id
+endif
+
+# TTY detection for interactive flag
+DOCKER_STDIN=$(shell test -t 0 && echo -i)
+DOCKER_STDOUT=$(shell test -t 1 && echo -t)
+
+# Containerized build environment
+BUILD_ENV=$(CONTAINER_CLI) run --rm $(DOCKER_STDIN) $(DOCKER_STDOUT) $(EXTRA_RUN_FLAGS) $(MOUNT_FLAGS) --user=$(shell id -u):$(shell id -g) --workdir=/tmp \
+	-e "SYSROOT=/mnt/wasm32-wasi-sysroot" \
+	-e "WASI_SDK_MAJOR=$(WASI_SDK_MAJOR)" -e "WASI_SDK_FULL=$(WASI_SDK_FULL)" \
+	-e "BDWGC_VERSION=$(BDWGC_VERSION)" -e "PCRE2_VERSION=$(PCRE2_VERSION)" \
+	$(BUILDER_IMAGE_NAME)
+
+all: libc libclang_rt libpcre2 libgc
 
 build-container:
-	@if [ "$$(docker inspect $(BUILDER_IMAGE_NAME) --format '{{ index .Config.Labels "version"}}' 2>/dev/null || true)" != "$(BUILDER_IMAGE_VERSION)" ]; then \
-		docker build -t $(BUILDER_IMAGE_NAME) --build-arg BUILDER_IMAGE_VERSION=$(BUILDER_IMAGE_VERSION) .; \
+	@if [ "$$( $(CONTAINER_CLI) inspect $(BUILDER_IMAGE_NAME) --format '{{ index .Config.Labels "version"}}' 2>/dev/null || true)" != "$(BUILDER_IMAGE_VERSION)" ]; then \
+		$(CONTAINER_CLI) build --pull -t $(BUILDER_IMAGE_NAME) \
+			--build-arg BUILDER_IMAGE_VERSION=$(BUILDER_IMAGE_VERSION) \
+			--build-arg ALPINE_VERSION=$(ALPINE_VERSION) \
+			--build-arg WASI_SDK_MAJOR=$(WASI_SDK_MAJOR) \
+			--build-arg WASI_SDK_FULL=$(WASI_SDK_FULL) \
+			.; \
 	fi
 
 wasm32-wasi-sysroot:

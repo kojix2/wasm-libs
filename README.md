@@ -1,15 +1,39 @@
-# WebAssembly Libs for WASI
+# wasm-libs
 
-This repo has a set of helper scripts to build popular libraries for the WebAssembly WASI target.
+Build C/C++ libraries for WebAssembly WASI target.
 
-Use `make <libname>` to build a library, or `make all` to make all of them. Docker is the only required dependency.
+## Usage
 
-Included libraries:
+```bash
+make all              # Build all libraries
+make libc libgc       # Build specific libraries
+make clean            # Remove build artifacts
+```
 
-| Name | Description | Source |
-| --- | --- | --- |
-| libc | wasi-libc based on musl 1.2.3, from wasi-sdk-19 | [Source](https://github.com/WebAssembly/wasi-libc) |
-| libclang_rt | Clang's runtime library, from wasi-sdk-19 | [Source](https://github.com/WebAssembly/wasi-sdk) |
-| libgc | Boehm-Demers-Weiser Garbage Collector version 8.2.2 | [Source](https://github.com/ivmai/bdwgc) |
-| libpcre | PCRE library version 8.45 | [Source](https://www.pcre.org/) |
-| libpcre2 | PCRE library version 10.42 | [Source](https://github.com/PCRE2Project/pcre2) |
+Requires: Docker or Podman
+
+## Libraries
+
+| Library | Version |
+| --- | --- |
+| libc | WASI SDK 29 |
+| libclang_rt | WASI SDK 29 |
+| libgc | v8.2.10 |
+| libpcre2 | 10.47 |
+
+Output: `wasm32-wasi-sysroot/lib/wasm32-wasi/*.a`
+
+## Version Updates
+
+Edit `versions.mk`:
+```makefile
+WASI_SDK_MAJOR ?= 30
+BDWGC_VERSION ?= v8.3.0
+```
+
+Or override:
+```bash
+make WASI_SDK_MAJOR=30 build-container
+```
+
+See `UPGRADE_NOTES.md` for upgrade procedures.
