@@ -13,7 +13,7 @@
 ALPINE_VERSION ?= 3.23
 
 # WASI SDK toolchain
-WASI_SDK_MAJOR ?= 29
+WASI_SDK_MAJOR ?= 30
 WASI_SDK_FULL ?= $(WASI_SDK_MAJOR).0
 
 # Library versions (Git tags)

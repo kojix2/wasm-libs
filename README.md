@@ -16,8 +16,8 @@ Requires: Docker or Podman
 
 | Library | Version |
 | --- | --- |
-| libc | WASI SDK 29 |
-| libclang_rt | WASI SDK 29 |
+| libc | WASI SDK 30 |
+| libclang_rt | WASI SDK 30 |
 | libgc | v8.2.10 |
 | libpcre2 | 10.47 |
 
