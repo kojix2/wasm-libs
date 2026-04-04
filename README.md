@@ -36,4 +36,16 @@ Or override:
 make WASI_SDK_MAJOR=30 build-container
 ```
 
+Quick upgrade check:
+```bash
+make clean all
+make tar
+```
+
 See `UPGRADE_NOTES.md` for upgrade procedures.
+
+### Minimal Maintenance Policy
+
+- Keep regular version updates in `versions.mk` only.
+- Keep workflow changes in `.github/workflows/release.yml` only.
+- Change `libs/*/build.sh` only when upstream changes break builds.
