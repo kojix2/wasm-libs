@@ -24,6 +24,7 @@ DOCKER_STDOUT=$(shell test -t 1 && echo -t)
 BUILD_ENV=$(CONTAINER_CLI) run --rm $(DOCKER_STDIN) $(DOCKER_STDOUT) $(EXTRA_RUN_FLAGS) $(MOUNT_FLAGS) --user=$(shell id -u):$(shell id -g) --workdir=/tmp \
 	-e "SYSROOT=/mnt/wasm32-wasi-sysroot" \
 	-e "WASI_SDK_MAJOR=$(WASI_SDK_MAJOR)" -e "WASI_SDK_FULL=$(WASI_SDK_FULL)" \
+	-e "WASI_TARGET=$(WASI_TARGET)" -e "WASI_HOST=$(WASI_HOST)" \
 	-e "BDWGC_VERSION=$(BDWGC_VERSION)" -e "PCRE2_VERSION=$(PCRE2_VERSION)" \
 	$(BUILDER_IMAGE_NAME)
 

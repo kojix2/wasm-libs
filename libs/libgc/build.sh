@@ -6,12 +6,12 @@ git clone --branch "${BDWGC_VERSION}" --depth 1 https://github.com/ivmai/bdwgc
 cd bdwgc
 
 export CC="clang"
-export CFLAGS="-target wasm32-wasi --sysroot=${SYSROOT} -Os -mllvm -wasm-enable-sjlj -DCPPCHECK"
+export CFLAGS="-target ${WASI_TARGET} --sysroot=${SYSROOT} -Os -mllvm -wasm-enable-sjlj -DCPPCHECK"
 
 ./autogen.sh
 
 ./configure \
-  --host=wasm32-wasi \
+  --host=${WASI_HOST} \
   --with-sysroot=${SYSROOT} \
   --enable-static \
   --disable-threads \
@@ -39,7 +39,12 @@ extern int __data_end[];
 #undef DATAEND
 #define DATAEND ((ptr_t)__data_end)
 
-inline int ___mprotect_stub(void *addr, size_t len, int prot) { return 0; }
+inline int ___mprotect_stub(void *addr, size_t len, int prot) {
+  (void)addr;
+  (void)len;
+  (void)prot;
+  return 0;
+}
 #define mprotect ___mprotect_stub
 
 inline ptr_t GC_wasm_get_mem(size_t bytes) {

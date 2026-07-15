@@ -6,12 +6,12 @@ git clone --branch "${PCRE2_VERSION}" --depth 1 https://github.com/PCRE2Project/
 cd pcre2
 
 export CC="clang"
-export CFLAGS="-target wasm32-wasi --sysroot=${SYSROOT} -Os"
+export CFLAGS="-target ${WASI_TARGET} --sysroot=${SYSROOT} -Os"
 
 ./autogen.sh
 
 ./configure \
-  --host=wasm32-wasi \
+  --host=${WASI_HOST} \
   --with-sysroot=${SYSROOT} \
   --disable-shared \
   --disable-pcre2grep-callout

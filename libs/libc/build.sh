@@ -9,4 +9,6 @@ rm -rf wasi-sysroot
 tar -xzf /tmp/wasi-sysroot.tar.gz
 
 cp -r wasi-sysroot-${WASI_SDK_FULL}/include/* "$SYSROOT/include"
-cp -r wasi-sysroot-${WASI_SDK_FULL}/lib/wasm32-wasip1/* "$SYSROOT/lib/wasm32-wasi"
+mkdir -p "$SYSROOT/lib/${WASI_TARGET}"
+cp -r wasi-sysroot-${WASI_SDK_FULL}/lib/${WASI_TARGET}/* "$SYSROOT/lib/${WASI_TARGET}"
+cp -r "$SYSROOT/lib/${WASI_TARGET}"/* "$SYSROOT/lib/wasm32-wasi"

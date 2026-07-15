@@ -16,9 +16,9 @@ Requires: Docker or Podman
 
 | Library | Version |
 | --- | --- |
-| libc | WASI SDK 30 |
-| libclang_rt | WASI SDK 30 |
-| libgc | v8.2.10 |
+| libc | WASI SDK 33 |
+| libclang_rt | WASI SDK 33 |
+| libgc | v8.2.12 |
 | libpcre2 | 10.47 |
 
 Output: `wasm32-wasi-sysroot/lib/wasm32-wasi/*.a`
@@ -27,13 +27,18 @@ Output: `wasm32-wasi-sysroot/lib/wasm32-wasi/*.a`
 
 Edit `versions.mk`:
 ```makefile
-WASI_SDK_MAJOR ?= 30
-BDWGC_VERSION ?= v8.3.0
+ALPINE_VERSION ?= 3.24
+WASI_SDK_MAJOR ?= 33
+WASI_SDK_FULL ?= 33.0+m
+WASI_TARGET ?= wasm32-wasip1
+WASI_HOST ?= wasm32-wasi
+BDWGC_VERSION ?= v8.2.12
+PCRE2_VERSION ?= pcre2-10.47
 ```
 
 Or override:
 ```bash
-make WASI_SDK_MAJOR=30 build-container
+make WASI_SDK_MAJOR=33 build-container
 ```
 
 Quick upgrade check:
@@ -49,3 +54,8 @@ See `UPGRADE_NOTES.md` for upgrade procedures.
 - Keep regular version updates in `versions.mk` only.
 - Keep workflow changes in `.github/workflows/release.yml` only.
 - Change `libs/*/build.sh` only when upstream changes break builds.
+
+## Release
+
+Push a `v*` tag to run `.github/workflows/release.yml` and publish a GitHub Release.
+GitHub Actions versions are maintained by Dependabot.

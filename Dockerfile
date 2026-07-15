@@ -1,6 +1,6 @@
 # WASI SDK WebAssembly Builder Image
 # Note: Version values are passed via --build-arg from Makefile (sourced from versions.mk)
-ARG ALPINE_VERSION
+ARG ALPINE_VERSION=3.24
 FROM alpine:${ALPINE_VERSION}
 
 ARG BUILDER_IMAGE_VERSION
@@ -30,6 +30,12 @@ RUN set -euo pipefail; \
   tar -xzf /tmp/builtins.tar.gz -C /tmp; \
   clang_resource_dir="$(clang -print-resource-dir)"; \
   mkdir -p "$clang_resource_dir/lib/wasi"; \
+  mkdir -p "$clang_resource_dir/lib/wasm32-unknown-wasi"; \
+  mkdir -p "$clang_resource_dir/lib/wasm32-unknown-wasip1"; \
   cp "/tmp/libclang_rt-${WASI_SDK_FULL}/wasm32-unknown-wasi/libclang_rt.builtins.a" \
      "$clang_resource_dir/lib/wasi/libclang_rt.builtins-wasm32.a"; \
+  cp "/tmp/libclang_rt-${WASI_SDK_FULL}/wasm32-unknown-wasi/libclang_rt.builtins.a" \
+     "$clang_resource_dir/lib/wasm32-unknown-wasi/libclang_rt.builtins.a"; \
+  cp "/tmp/libclang_rt-${WASI_SDK_FULL}/wasm32-unknown-wasi/libclang_rt.builtins.a" \
+     "$clang_resource_dir/lib/wasm32-unknown-wasip1/libclang_rt.builtins.a"; \
   rm -rf /tmp/libclang_rt-${WASI_SDK_FULL} /tmp/builtins.tar.gz
